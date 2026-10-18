@@ -2,14 +2,16 @@
 
 ClassTalk에서 녹음한 **내 수업**을 선생님 컴퓨터에서 전사하는 프로그램입니다. Python이나 FFmpeg를 따로 설치하지 않아도 됩니다.
 
-## 배포 상태
+## 다운로드
 
-첫 설치파일을 검증 중입니다. 공개 릴리스가 준비되면 [ClassTalk 다운로드 페이지](https://classtalk-web-three.vercel.app/worker)에서 받을 수 있습니다.
+[ClassTalk 다운로드 페이지](https://classtalk-web-three.vercel.app/worker)에서 컴퓨터에 맞는 설치파일을 받을 수 있습니다. [최신 공개 릴리스](https://github.com/phdkim0244-droid/classtalk-worker-downloads/releases/latest)에도 설치파일과 체크섬을 제공합니다.
 
 ## 지원 환경
 
 - Windows 10 이상, x64
-- macOS 12 이상, Apple Silicon 또는 Intel (각각 다른 파일)
+- macOS 13 이상, Apple Silicon 또는 Intel (각각 다른 파일)
+
+Mac 실행 검사는 macOS 15의 Apple Silicon·Intel 환경에서 수행했습니다. macOS 13·14에서는 별도 실행 검증을 하지 않았습니다.
 
 ## 사용 순서
 
