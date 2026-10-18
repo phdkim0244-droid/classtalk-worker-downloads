@@ -151,6 +151,25 @@ class FasterWhisperDiarTranscriber(Transcriber):
                 margin = similarities[best] - similarities[ranking[1]] if len(ranking) > 1 else 1.0
                 if similarities[best] >= 0.65 and margin >= 0.05:
                     speakers[i] = f"SPEAKER_{cluster_ids[best]:02d}"
+        if getattr(self, "verify_short_speakers", False):
+            from .short_voice_verifier import verified_short_matches
+            primary = dict(zip(idx_with_emb, embs))
+            anchors = {idx_with_emb[j]: label for j, label in zip(reliable, labels)}
+            candidates = [i for i in idx_with_emb if i not in speakers and i not in anchors]
+            if candidates and len(set(anchors.values())) >= 2:
+                # A separate model checks the same bounded audio; no neighbour
+                # concatenation, padding with another voice, or role guessing.
+                targets = list(anchors) + candidates
+                secondary = {}
+                progress("verify_speakers", 0, len(targets))
+                for completed, i in enumerate(targets, 1):
+                    turn = turns[i]
+                    vector = self._short_encoder.embed(wav, turn.start_ms, turn.end_ms)
+                    if vector is not None:
+                        secondary[i] = vector
+                    progress("verify_speakers", completed, len(targets))
+                matches = verified_short_matches(primary, secondary, anchors, candidates)
+                speakers.update({i: f"SPEAKER_{label:02d}" for i, label in matches.items()})
         for segment, turn_id in zip(segs, turn_ids):
             segment.speaker = speakers.get(turn_id, "SPEAKER_UNKNOWN")
 

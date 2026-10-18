@@ -50,7 +50,9 @@ class AccelerationTests(unittest.TestCase):
                 patch("desktop.acceleration.download_mlx_model") as download, \
                 patch("desktop.engine.download_model", return_value=directory), \
                 patch("faster_whisper.WhisperModel"), \
-                patch("app.transcribe.faster_whisper_diar_backend.FasterWhisperDiarTranscriber._load_encoder"):
+                patch("app.transcribe.faster_whisper_diar_backend.FasterWhisperDiarTranscriber._load_encoder"), \
+                patch("app.transcribe.short_voice_verifier.prepare_model", return_value=Path(directory)), \
+                patch("app.transcribe.short_voice_verifier.ShortVoiceEncoder"):
             engine = Engine(Path(directory), acceleration="cpu")
             engine.prepare()
             probe.assert_not_called()
@@ -64,7 +66,9 @@ class AccelerationTests(unittest.TestCase):
                 patch("desktop.acceleration.supports_mlx", return_value=False), \
                 patch("desktop.engine.download_model", return_value=directory), \
                 patch("faster_whisper.WhisperModel"), \
-                patch("app.transcribe.faster_whisper_diar_backend.FasterWhisperDiarTranscriber._load_encoder"):
+                patch("app.transcribe.faster_whisper_diar_backend.FasterWhisperDiarTranscriber._load_encoder"), \
+                patch("app.transcribe.short_voice_verifier.prepare_model", return_value=Path(directory)), \
+                patch("app.transcribe.short_voice_verifier.ShortVoiceEncoder"):
             engine = Engine(Path(directory))
             engine.prepare()
             self.assertEqual(engine.transcriber.speech_window_seconds, 28)

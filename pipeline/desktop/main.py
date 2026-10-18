@@ -45,6 +45,15 @@ def self_test(report_path: str | None) -> int:
         assert embedding.shape == (256,)
         assert len(AgglomerativeClustering(n_clusters=2).fit_predict(
             np.array([[0., 0.], [0.1, 0.], [10., 10.]]))) == 3
+        from app.transcribe.short_voice_verifier import ShortVoiceEncoder, bundled_model, valid_model
+        model = bundled_model()
+        if model is not None:
+            assert valid_model(model), "Bundled short-speaker model is missing or corrupt"
+            verifier = ShortVoiceEncoder(model)
+            # Exercise native inference (not voice accuracy) with deterministic nonzero PCM.
+            test_pcm = np.random.default_rng(17).normal(0, 0.01, 32000).astype(np.float32)
+            assert verifier.embed(test_pcm, 0, 2000).shape == (192,)
+            report["shortSpeakerModel"] = "bundled CPU inference passed"
         report.update(ok=True, checks=["tk", "keyring", "ctranslate2", "audio_decode",
                                       "vad_model", "speaker_model", "clustering"])
     except Exception as exc:

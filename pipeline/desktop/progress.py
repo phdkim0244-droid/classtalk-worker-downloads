@@ -48,6 +48,8 @@ class Progress:
             "initializing_gpu_model": "Mac GPU 전사 모델 준비 중",
             "initializing_whisper_model": "음성 인식 모델 준비 중",
             "initializing_speaker_model": "화자 구분 모델 준비 중",
+            "initializing_short_speaker_model": "짧은 발화 확인 모델 준비 중",
+            "verify_speakers": "짧은 발화 화자 교차 확인 중",
             "models_ready": "모델 준비 완료",
             "download": "음성 파일 받는 중",
             "decode": "음성 파일 읽는 중",
@@ -61,7 +63,7 @@ class Progress:
             "complete": "전사 완료",
         }
         label = labels.get(self.stage, "처리 중")
-        if self.stage in ("transcribe", "speakers") and self.percent is not None:
+        if self.stage in ("transcribe", "speakers", "verify_speakers") and self.percent is not None:
             label += f" · {self.percent}%"
         return label
 
@@ -72,7 +74,7 @@ class Progress:
                     " · 무음 제외, 이 단계의 진행률")
         if self.stage == "transcribe":
             return "감지된 음성이 없습니다. 결과를 정리합니다."
-        if self.stage == "speakers" and self.total:
+        if self.stage in ("speakers", "verify_speakers") and self.total:
             return f"음성 구간 {int(self.done)} / {int(self.total)}개 · 이 단계의 진행률"
         if self.stage in ("downloading_public_model", "downloading_gpu_model"):
             return "처음에는 약 3.1GB를 받습니다. 다음부터는 저장된 모델을 사용합니다."
@@ -81,7 +83,7 @@ class Progress:
         return "처리 중입니다. 이 단계는 진행률을 계산할 수 없습니다."
 
     def remaining_text(self, now: float) -> str:
-        if self.stage not in ("transcribe", "speakers"):
+        if self.stage not in ("transcribe", "speakers", "verify_speakers"):
             return ""
         if self.percent == 100:
             return "이 단계 처리 완료 · 다음 단계 준비 중"
@@ -92,7 +94,7 @@ class Progress:
         if age >= self.remaining_seconds or age > max(60, self.remaining_seconds / 2):
             return "현재 구간 처리 중 · 남은 시간 추정 갱신 대기"
         remaining = max(1, math.ceil((self.remaining_seconds - age) / 10) * 10)
-        label = "전사 단계" if self.stage == "transcribe" else "화자 특징 추출"
+        label = {"transcribe": "전사 단계", "speakers": "화자 특징 추출", "verify_speakers": "짧은 발화 화자 확인"}[self.stage]
         rate = f" · 음성 길이 대비 {self.speed:.1f}배속" if self.speed else ""
         return f"{label} 남음 약 {clock_text(remaining)}{rate}"
 
@@ -113,7 +115,7 @@ class ProgressEstimator:
     def update(self, stage, done, total, *, file_index=0):
         now = self.clock()
         key = (file_index, stage, total)
-        valid = (stage in ("transcribe", "speakers") and done is not None and total is not None
+        valid = (stage in ("transcribe", "speakers", "verify_speakers") and done is not None and total is not None
                  and math.isfinite(done) and math.isfinite(total) and total > 0 and done >= 0)
         if key != self.key or not valid or (self.samples and done < self.samples[-1][1]):
             self.key = key

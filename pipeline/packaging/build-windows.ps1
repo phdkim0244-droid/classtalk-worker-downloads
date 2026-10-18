@@ -17,7 +17,7 @@ if ($LASTEXITCODE -ne 0) { throw "Installer compilation failed" }
 # Install the actual distribution into a disposable per-user directory, then test it.
 if ($env:RUNNER_TEMP) { $testDir = Join-Path $env:RUNNER_TEMP "classtalk-installer-smoke" }
 else { $testDir = Join-Path $env:TEMP "classtalk-installer-smoke" }
-$installer = "dist/installers/ClassTalk-Worker-0.2.2-windows-x64-Setup.exe"
+$installer = "dist/installers/ClassTalk-Worker-0.2.3-windows-x64-Setup.exe"
 $install = Start-Process -FilePath $installer -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/DIR=`"$testDir`"" -PassThru
 if (!$install.WaitForExit(600000)) { Stop-Process -Id $install.Id -Force; throw "Installer timed out after 10 minutes" }
 if ($install.ExitCode -ne 0) { throw "Installer execution failed" }

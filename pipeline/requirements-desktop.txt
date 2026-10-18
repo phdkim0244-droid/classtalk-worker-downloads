@@ -4,6 +4,9 @@ faster-whisper==1.1.1
 ctranslate2==4.6.0
 av==13.1.0
 resemblyzer==0.1.4
+# Independent local speaker verification; CPU wheels for Windows and both Macs.
+sherpa-onnx==1.13.8
+sherpa-onnx-core==1.13.8
 # webrtcvad 2.0.10 (Resemblyzer dependency) still imports pkg_resources.
 setuptools==80.9.0
 torch==2.2.2

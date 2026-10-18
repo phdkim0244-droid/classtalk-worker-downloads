@@ -10,7 +10,7 @@ python packaging/run-check.py --executable "dist/ClassTalk Worker.app/Contents/M
 python packaging/run-check.py --executable "dist/ClassTalk Worker.app/Contents/MacOS/ClassTalkWorker" --audio desktop/tests/fixtures/synthetic-ko.wav --regressions desktop/tests/fixtures/model-regressions.json --report dist/model-smoke.json
 task_arch="$(uname -m)"
 if [ "$task_arch" = "x86_64" ]; then task_arch=x64; fi
-task_image="dist/installers/ClassTalk-Worker-0.2.2-macos-${task_arch}.dmg"
+task_image="dist/installers/ClassTalk-Worker-0.2.3-macos-${task_arch}.dmg"
 task_stage="$(mktemp -d)"
 trap 'rm -rf "$task_stage"' EXIT
 ditto "dist/ClassTalk Worker.app" "$task_stage/ClassTalk Worker.app"

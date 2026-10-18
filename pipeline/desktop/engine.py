@@ -103,6 +103,9 @@ class Engine:
         # Encoder weights are shipped inside the application, with no HF account.
         progress("initializing_speaker_model")
         transcriber._load_encoder()
+        from app.transcribe.short_voice_verifier import prepare_model, ShortVoiceEncoder
+        progress("initializing_short_speaker_model")
+        transcriber._short_encoder = ShortVoiceEncoder(prepare_model(self.cache / "speaker-models"))
         self.transcriber = transcriber
         progress("models_ready")
 
@@ -118,14 +121,21 @@ class Engine:
         if self.transcriber is None:
             raise RuntimeError("전사 모델이 준비되지 않았습니다.")
         teacher = recording.get("groupNo") is None
-        speakers = recording.get("students") or job.get("studentsPerGroup")
+        mixed_lesson = teacher and job.get("sessionType", "lesson") != "council"
+        speakers = recording.get("speakerCount") if mixed_lesson else (recording.get("students") or job.get("studentsPerGroup"))
+        if mixed_lesson and speakers is not None and (type(speakers) is not int or not 1 <= speakers <= 100):
+            raise ValueError("녹음 화자 수 설정이 올바르지 않습니다.")
         self.transcriber.n_speakers = int(speakers) if speakers else None
-        segments = self.transcriber.transcribe(str(path), is_teacher=teacher, progress=progress)
+        self.transcriber.verify_short_speakers = mixed_lesson
+        # Mixed classrooms have no configured group size. A conservative cosine
+        # threshold keeps distinct voices apart; similar voices can still merge.
+        self.transcriber.threshold = 0.30 if mixed_lesson else 0.65
+        segments = self.transcriber.transcribe(str(path), is_teacher=teacher and not mixed_lesson, progress=progress)
         if progress:
             progress("label", None, None)
         labels = label_segments(
-            segments, is_teacher=teacher,
-            speaker_prefix="교사" if job.get("sessionType") == "council" else "학생",
+            segments, is_teacher=teacher and not mixed_lesson,
+            speaker_prefix="화자" if mixed_lesson else ("교사" if job.get("sessionType") == "council" else "학생"),
         )
         return [{"speaker": row["speaker_label"], "startMs": row["start_ms"],
                  "endMs": row["end_ms"], "text": row["text"]} for row in labels]

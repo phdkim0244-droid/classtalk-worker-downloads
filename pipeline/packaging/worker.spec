@@ -6,19 +6,24 @@ from pathlib import Path
 from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs, collect_submodules, copy_metadata
 
 root = Path(SPECPATH).parent
-datas = []
+sys.path.insert(0, str(root))
+from app.transcribe.short_voice_verifier import prepare_model
+short_voice_model = prepare_model(root / "build" / "speaker-models")
+datas = [(str(short_voice_model), "speaker-models")]
 binaries = []
 hiddenimports = ["tkinter", "keyring.backends.macOS", "keyring.backends.Windows"]
 for package in ("faster_whisper", "resemblyzer", "librosa", "certifi"):
     datas += collect_data_files(package)
-for package in ("ctranslate2", "av", "onnxruntime"):
+for package in ("ctranslate2", "av", "onnxruntime", "sherpa_onnx"):
     binaries += collect_dynamic_libs(package)
 hiddenimports += collect_submodules("sklearn")
 hiddenimports += collect_submodules("librosa")
 hiddenimports += collect_submodules("resemblyzer")
-for package in ("keyring", "platformdirs", "requests", "faster-whisper", "resemblyzer", "torch"):
+hiddenimports += collect_submodules("sherpa_onnx")
+for package in ("keyring", "platformdirs", "requests", "faster-whisper", "resemblyzer", "torch", "sherpa-onnx", "sherpa-onnx-core"):
     datas += copy_metadata(package)
-datas += [(str(root / "packaging" / "THIRD_PARTY_NOTICES.md"), ".")]
+datas += [(str(root / "packaging" / "THIRD_PARTY_NOTICES.md"), "."),
+          (str(root / "packaging" / "CAMPPLUS-LICENSE.txt"), ".")]
 if sys.platform == "darwin" and platform.machine() == "arm64":
     # MLX kernels and Whisper tokenizer/mel assets must work without Python,
     # ffmpeg, or a model hub request at inference time.
@@ -61,6 +66,6 @@ coll = COLLECT(exe, a.binaries, a.datas, strip=False, upx=False, name="ClassTalk
 if sys.platform == "darwin":
     app = BUNDLE(
         coll, name="ClassTalk Worker.app", bundle_identifier="kr.ydaasam.classtalk.worker",
-        info_plist={"CFBundleShortVersionString": "0.2.2", "CFBundleVersion": "4",
+        info_plist={"CFBundleShortVersionString": "0.2.3", "CFBundleVersion": "5",
                     "LSMinimumSystemVersion": "13.0", "NSHighResolutionCapable": True},
     )
