@@ -1,0 +1,28 @@
+# Runtime for the Python-free desktop distribution; Python 3.11.
+# NumPy 1.x / torch 2.2.2 retain Intel macOS support. Windows CI uses CPU wheels.
+faster-whisper==1.1.1
+ctranslate2==4.6.0
+av==13.1.0
+resemblyzer==0.1.4
+# webrtcvad 2.0.10 (Resemblyzer dependency) still imports pkg_resources.
+setuptools==80.9.0
+torch==2.2.2
+numpy==1.26.4
+scikit-learn==1.6.1
+librosa==0.10.2.post1
+numba==0.60.0
+llvmlite==0.43.0
+onnxruntime==1.20.1
+huggingface-hub==0.28.1
+tokenizers==0.21.0
+scipy==1.13.1
+keyring==25.6.0
+platformdirs==4.3.6
+requests==2.32.5
+pyinstaller==6.11.1
+pip-licenses==5.0.0
+# Apple Silicon on macOS 15+ uses Metal locally; other platforms retain CPU.
+mlx-whisper==0.4.3; sys_platform == "darwin" and platform_machine == "arm64"
+mlx==0.29.4; sys_platform == "darwin" and platform_machine == "arm64"
+mlx-metal==0.29.4; sys_platform == "darwin" and platform_machine == "arm64"
+tiktoken==0.14.0; sys_platform == "darwin" and platform_machine == "arm64"

@@ -1,0 +1,83 @@
+name: Build ClassTalk desktop worker
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.actor == github.repository_owner
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-2022
+            platform: windows-x64
+          - runner: macos-15
+            platform: macos-arm64
+          - runner: macos-15-intel
+            platform: macos-x64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: pipeline/requirements-desktop.txt
+      - name: Install Windows CPU-only PyTorch
+        if: runner.os == 'Windows'
+        run: python -m pip install torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu
+      - name: Install desktop dependencies
+        run: python -m pip install -r requirements-desktop.txt
+      - name: Test scoped worker protocol
+        run: python -m unittest discover -s desktop/tests -v
+      - name: Build and smoke-test macOS app and DMG
+        if: runner.os == 'macOS'
+        run: bash packaging/build-macos.sh
+      - name: Install Inno Setup
+        if: runner.os == 'Windows'
+        run: choco install innosetup --no-progress -y
+      - name: Build, install and smoke-test Windows Setup
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./packaging/build-windows.ps1
+      - name: Artifact checksums
+        shell: python
+        run: |
+          import hashlib, pathlib
+          root = pathlib.Path('dist/installers')
+          for artifact in root.iterdir():
+              if artifact.suffix in ('.dmg', '.exe'):
+                  digest = hashlib.file_digest(artifact.open('rb'), 'sha256').hexdigest()
+                  artifact.with_name(artifact.name + '.sha256').write_text(digest + '  ' + artifact.name + '\n')
+      - uses: actions/upload-artifact@v4
+        with:
+          name: classtalk-worker-${{ matrix.platform }}
+          path: |
+            pipeline/dist/installers/*
+            pipeline/dist/self-test.json
+            pipeline/dist/model-smoke.json
+            pipeline/dist/model-smoke.stacks.txt
+            pipeline/packaging/third-party-licenses.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Retain native diagnostics even when a check fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: classtalk-worker-diagnostics-${{ matrix.platform }}
+          path: |
+            pipeline/dist/*-test.json
+            pipeline/dist/model-smoke.json
+            pipeline/dist/model-smoke.stacks.txt
+            pipeline/build/ClassTalkWorker/warn-*.txt
+            pipeline/build/worker/warn-*.txt
+          if-no-files-found: ignore
+          retention-days: 14

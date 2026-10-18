@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+.venv/
+pipeline/build/
+pipeline/dist/
+pipeline/packaging/third-party-licenses.json
+.env
+.env.*

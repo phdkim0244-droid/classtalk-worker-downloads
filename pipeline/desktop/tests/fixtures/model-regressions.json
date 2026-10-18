@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "contrasting-korean-amounts",
+      "audio": "synthetic-numeric-ko.wav",
+      "sha256": "1c0936f3e87926d923e6115fb12144ea47e4a80fc2dcfa31e42ad4501d97f6d6",
+      "expectedPattern": "^[^\\d]*2\\s*(?:ml|밀리리터)[^\\d]*1\\s*(?:ml|밀리리터)[^\\d]*$"
+    },
+    {
+      "id": "remaining-korean-amounts",
+      "audio": "synthetic-numeric-remaining-ko.wav",
+      "sha256": "53949bb6234161de551e0a708c47781c25db284f7cd6f1f1bcdcbb34cc7a8ddd",
+      "expectedPattern": "^[^\\d]*8\\s*(?:ml|밀리리터)[^\\d]*9\\s*(?:ml|밀리리터)[^\\d]*$"
+    }
+  ]
+}
