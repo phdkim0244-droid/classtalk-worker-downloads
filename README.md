@@ -4,7 +4,7 @@ ClassTalk에서 녹음한 **내 수업**을 선생님 컴퓨터에서 전사하�
 
 ## 다운로드
 
-[ClassTalk 다운로드 페이지](https://classtalk-web-three.vercel.app/worker)에서 컴퓨터에 맞는 설치파일을 받을 수 있습니다. [최신 공개 릴리스](https://github.com/phdkim0244-droid/classtalk-worker-downloads/releases/latest)에도 설치파일과 체크섬을 제공합니다.
+[ClassTalk 다운로드 페이지](https://talk.ydssam.kr/worker)에서 컴퓨터에 맞는 설치파일을 받을 수 있습니다. [최신 공개 릴리스](https://github.com/phdkim0244-droid/classtalk-worker-downloads/releases/latest)에도 설치파일과 체크섬을 제공합니다.
 
 ## 지원 환경
 
