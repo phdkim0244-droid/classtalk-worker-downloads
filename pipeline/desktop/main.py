@@ -9,7 +9,7 @@ import threading
 import webbrowser
 from pathlib import Path
 
-from desktop import PRODUCTION_ORIGIN, VERSION
+from desktop import PRODUCTION_ORIGIN, VERSION, storage_identity
 
 
 def self_test(report_path: str | None) -> int:
@@ -172,7 +172,7 @@ def main() -> int:
 
     try:
         api = Api(args.dev_server or PRODUCTION_ORIGIN, allow_local=bool(args.dev_server))
-        instance = InstanceLock(user_cache_path("ClassTalkWorker"), api.origin)
+        instance = InstanceLock(user_cache_path("ClassTalkWorker"), storage_identity(api.origin))
         if not instance.acquire():
             messagebox.showinfo("이미 실행 중입니다", "ClassTalk 전사 워커가 이미 실행 중입니다. 열린 앱을 확인해 주세요.", parent=root)
             root.destroy()

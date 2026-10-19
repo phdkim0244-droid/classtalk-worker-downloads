@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import sys
 
+from desktop import storage_identity
 from desktop.client import WorkerError
 
 
@@ -18,7 +19,7 @@ class TokenStore:
             raise WorkerError("이 앱은 Windows와 macOS를 지원합니다.")
         self.backend = Keyring()
         self.service = "kr.ydaasam.classtalk.worker"
-        self.account = origin
+        self.account = storage_identity(origin)
 
     def load(self) -> str | None:
         try:

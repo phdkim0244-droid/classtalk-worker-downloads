@@ -118,6 +118,29 @@ class ProtocolTests(unittest.TestCase):
         with self.assertRaises(WorkerError):
             self.api.verification_url("https://other.example/worker/connect")
 
+    def test_custom_production_domain_preserves_local_identity_only(self):
+        from desktop import PRODUCTION_ORIGIN, storage_identity
+        self.assertEqual(PRODUCTION_ORIGIN, "https://talk.ydssam.kr")
+        api = Api()
+        self.assertEqual(api.origin, PRODUCTION_ORIGIN)
+        self.assertEqual(api.verification_url(PRODUCTION_ORIGIN + "/worker/connect?code=ABC123"),
+                         PRODUCTION_ORIGIN + "/worker/connect?code=ABC123")
+        self.assertEqual(storage_identity(PRODUCTION_ORIGIN), "https://classtalk-web-three.vercel.app")
+        self.assertEqual(storage_identity(self.origin), self.origin)
+        for origin in ["https://classtalk-web-three.vercel.app", "https://talk.ydssam.kr.evil.example",
+                       "https://talk.ydssam.kr@evil.example", "http://talk.ydssam.kr"]:
+            with self.assertRaises(ValueError):
+                checked_origin(origin)
+        with tempfile.TemporaryDirectory() as directory:
+            old = InstanceLock(Path(directory), "https://classtalk-web-three.vercel.app")
+            new = InstanceLock(Path(directory), storage_identity(PRODUCTION_ORIGIN))
+            self.assertTrue(old.acquire())
+            try:
+                self.assertFalse(new.acquire())
+            finally:
+                new.release()
+                old.release()
+
     def test_cancellation_prevents_submission(self):
         stop = threading.Event()
         stop.set()
