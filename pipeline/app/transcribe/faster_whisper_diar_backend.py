@@ -156,7 +156,7 @@ class FasterWhisperDiarTranscriber(Transcriber):
             primary = dict(zip(idx_with_emb, embs))
             anchors = {idx_with_emb[j]: label for j, label in zip(reliable, labels)}
             candidates = [i for i in idx_with_emb if i not in speakers and i not in anchors]
-            if candidates and len(set(anchors.values())) >= 2:
+            if (candidates or getattr(self, "refine_speaker_turns", False)) and len(set(anchors.values())) >= 2:
                 # A separate model checks the same bounded audio; no neighbour
                 # concatenation, padding with another voice, or role guessing.
                 targets = list(anchors) + candidates
@@ -170,6 +170,11 @@ class FasterWhisperDiarTranscriber(Transcriber):
                     progress("verify_speakers", completed, len(targets))
                 matches = verified_short_matches(primary, secondary, anchors, candidates)
                 speakers.update({i: f"SPEAKER_{label:02d}" for i, label in matches.items()})
+                if getattr(self, "refine_speaker_turns", False):
+                    from .turn_refinement import refine_turns
+                    return refine_turns(segs, turn_ids, turns, primary, secondary, anchors, speakers,
+                                        lambda a, b: self._embed(wav, a, b),
+                                        lambda a, b: self._short_encoder.embed(wav, a, b), progress)
         for segment, turn_id in zip(segs, turn_ids):
             segment.speaker = speakers.get(turn_id, "SPEAKER_UNKNOWN")
 

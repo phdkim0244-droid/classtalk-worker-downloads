@@ -1,4 +1,4 @@
-#define AppVersion "0.2.3"
+#define AppVersion "0.2.4"
 [Setup]
 AppId={{F83654D2-FA72-447A-B51C-6C46E25A8492}
 AppName=ClassTalk Worker

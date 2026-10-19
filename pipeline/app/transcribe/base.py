@@ -2,7 +2,14 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+
+@dataclass
+class WordSpan:
+    start_ms: int
+    end_ms: int
+    text: str
 
 
 @dataclass
@@ -12,6 +19,7 @@ class Segment:
     start_ms: int
     end_ms: int
     text: str
+    words: list[WordSpan] = field(default_factory=list)
 
 
 class Transcriber(ABC):

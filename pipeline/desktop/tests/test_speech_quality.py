@@ -23,6 +23,7 @@ class SpeechTimingTests(unittest.TestCase):
         ])]
         segments, turns = align_words(decoded, [SpeechTurn(1000, 2200), SpeechTurn(24000, 26000)])
         self.assertEqual(turns, [0, 1])
+        self.assertEqual([(w.start_ms, w.end_ms) for s in segments for w in s.words], [(1100, 2000), (24100, 25900)])
         self.assertEqual([(s.start_ms, s.end_ms) for s in segments], [(1100, 2000), (24100, 25900)])
         self.assertEqual([s.text for s in segments], ["첫 질문", "다음 질문"])
         self.assertEqual(sum(s.end_ms - s.start_ms for s in segments), 2700)
@@ -43,6 +44,7 @@ class SpeechTimingTests(unittest.TestCase):
         segments, _ = align_words([Row(start=0, end=25, text="불완전한 타임스탬프", words=[])],
                                   [SpeechTurn(1000, 2000), SpeechTurn(24000, 25000)])
         self.assertEqual(len(segments), 1)
+        self.assertEqual(segments[0].words, [])
         self.assertLessEqual(segments[0].end_ms - segments[0].start_ms, 1000)
 
     def test_unanchored_words_do_not_invent_a_whole_speech_turn(self):
@@ -75,6 +77,7 @@ class SpeechTimingTests(unittest.TestCase):
                             and 'initial_prompt' not in options and 'hotwords' not in options
                             for _, options in calls))
         self.assertEqual(ids, [0, 1])
+        self.assertEqual([(w.start_ms, w.end_ms) for s in result for w in s.words], [(1000, 1800), (24000, 24800)])
         self.assertEqual([(s.start_ms, s.end_ms, s.text) for s in result],
                          [(1000, 2000, "첫 질문"), (24000, 25000, "두 설명")])
 

@@ -66,6 +66,6 @@ coll = COLLECT(exe, a.binaries, a.datas, strip=False, upx=False, name="ClassTalk
 if sys.platform == "darwin":
     app = BUNDLE(
         coll, name="ClassTalk Worker.app", bundle_identifier="kr.ydaasam.classtalk.worker",
-        info_plist={"CFBundleShortVersionString": "0.2.3", "CFBundleVersion": "5",
+        info_plist={"CFBundleShortVersionString": "0.2.4", "CFBundleVersion": "6",
                     "LSMinimumSystemVersion": "13.0", "NSHighResolutionCapable": True},
     )

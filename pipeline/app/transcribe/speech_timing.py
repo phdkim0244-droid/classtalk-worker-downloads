@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .base import Segment
+from .base import Segment, WordSpan
 
 SR = 16000
 VAD_PARAMETERS = {
@@ -52,7 +52,7 @@ def align_words(whisper_segments, turns: list[SpeechTurn]) -> tuple[list[Segment
     """
     if not turns:
         return [], []
-    groups: list[tuple[int, int, int, str]] = []
+    groups: list[tuple[int, int, int, str, list[WordSpan]]] = []
     for sentence in whisper_segments:
         words = list(getattr(sentence, "words", None) or [])
         pieces = words or [sentence]
@@ -72,12 +72,14 @@ def align_words(whisper_segments, turns: list[SpeechTurn]) -> tuple[list[Segment
             if groups and groups[-1][0] == turn_id:
                 prior = groups[-1]
                 groups[-1] = (turn_id, min(prior[1], clipped_start),
-                              max(prior[2], clipped_end), prior[3] + text)
+                              max(prior[2], clipped_end), prior[3] + text,
+                              prior[4] + ([WordSpan(clipped_start, clipped_end, text)] if words else []))
             else:
-                groups.append((turn_id, clipped_start, clipped_end, text))
+                groups.append((turn_id, clipped_start, clipped_end, text,
+                               [WordSpan(clipped_start, clipped_end, text)] if words else []))
     out, ids = [], []
-    for turn_id, start, end, text in groups:
-        out.append(Segment("SPEAKER_00", start, end, text.strip()))
+    for turn_id, start, end, text, word_spans in groups:
+        out.append(Segment("SPEAKER_00", start, end, text.strip(), word_spans))
         ids.append(turn_id)
     return out, ids
 
@@ -135,6 +137,9 @@ def transcribe_speech(model, wav, *, language: str, beam_size: int = 5, progress
             # boundaries (including 80ms safety padding) determine duration:
             # decoder word alignment often clips a trailing Korean syllable.
             # This remains an estimate, not forced alignment or exact phonation.
+            for word in segment.words:
+                word.start_ms += start_ms
+                word.end_ms += start_ms
             segment.start_ms = turn.start_ms
             segment.end_ms = turn.end_ms
             segments.append(segment)

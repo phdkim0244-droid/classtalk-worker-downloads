@@ -127,6 +127,7 @@ class Engine:
             raise ValueError("녹음 화자 수 설정이 올바르지 않습니다.")
         self.transcriber.n_speakers = int(speakers) if speakers else None
         self.transcriber.verify_short_speakers = mixed_lesson
+        self.transcriber.refine_speaker_turns = mixed_lesson
         # Mixed classrooms have no configured group size. A conservative cosine
         # threshold keeps distinct voices apart; similar voices can still merge.
         self.transcriber.threshold = 0.30 if mixed_lesson else 0.65
